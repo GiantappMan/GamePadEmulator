@@ -1,0 +1,195 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ctrl="clr-namespace:GamePadEmulator.Controls">
+
+    <!-- ============================================================ -->
+    <!--  共享拟物设计系统：渐变材质、内凹井、按钮凸面高光、品牌配色          -->
+    <!-- ============================================================ -->
+
+    <!-- ===== 机身塑料渐变（深灰，顶部受光）===== -->
+    <LinearGradientBrush x:Key="BodyFill" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Offset="0.0" Color="#3A3A44"/>
+        <GradientStop Offset="0.18" Color="#2A2A33"/>
+        <GradientStop Offset="0.6" Color="#1C1C24"/>
+        <GradientStop Offset="1.0" Color="#14141A"/>
+    </LinearGradientBrush>
+
+    <!-- ===== 机身表面径向高光（让中间凸起、边缘暗下去）===== -->
+    <RadialGradientBrush x:Key="BodyGloss" GradientOrigin="0.5,0.28" RadiusX="0.55" RadiusY="0.45">
+        <GradientStop Offset="0.0"  Color="#1AFFFFFF"/>
+        <GradientStop Offset="0.55" Color="#05FFFFFF"/>
+        <GradientStop Offset="1.0"  Color="#59000000"/>
+    </RadialGradientBrush>
+
+    <!-- ===== 摇杆井（内凹渐变）===== -->
+    <RadialGradientBrush x:Key="WellFill" GradientOrigin="0.5,0.4">
+        <GradientStop Offset="0.0" Color="#08080C"/>
+        <GradientStop Offset="0.7" Color="#0E0E14"/>
+        <GradientStop Offset="1.0" Color="#1A1A22"/>
+    </RadialGradientBrush>
+
+    <!-- ===== 摇杆帽（凸面橡胶渐变）===== -->
+    <RadialGradientBrush x:Key="StickCapFill" GradientOrigin="0.45,0.35">
+        <GradientStop Offset="0.0" Color="#42424E"/>
+        <GradientStop Offset="0.6" Color="#2C2C36"/>
+        <GradientStop Offset="1.0" Color="#16161E"/>
+    </RadialGradientBrush>
+
+    <!-- ===== 凸面按钮高光（径向）===== -->
+    <RadialGradientBrush x:Key="ButtonGloss" GradientOrigin="0.5,0.32">
+        <GradientStop Offset="0.0" Color="#38FFFFFF"/>
+        <GradientStop Offset="0.6" Color="#00FFFFFF"/>
+        <GradientStop Offset="1.0" Color="#40000000"/>
+    </RadialGradientBrush>
+
+    <!-- ===== 肩键渐变 ===== -->
+    <LinearGradientBrush x:Key="ShoulderFill" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Offset="0.0" Color="#33333C"/>
+        <GradientStop Offset="1.0" Color="#1A1A22"/>
+    </LinearGradientBrush>
+
+    <!-- ============================================================ -->
+    <!--  AnalogStick 模板：凹井 + 凸面橡胶帽 + 顶部高光                    -->
+    <!-- ============================================================ -->
+    <ControlTemplate x:Key="AnalogStickTemplate" TargetType="{x:Type ctrl:AnalogStick}">
+        <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+            <!-- 外圈环 -->
+            <Ellipse Fill="#101018" Stroke="#05050A" StrokeThickness="2"/>
+            <!-- 内凹井 -->
+            <Ellipse Margin="5" Fill="{StaticResource WellFill}">
+                <Ellipse.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="5" Opacity="0.8" Direction="-90"/>
+                </Ellipse.Effect>
+            </Ellipse>
+            <!-- 凹井内圈细描边 -->
+            <Ellipse Margin="5" Stroke="#2C2C36" StrokeThickness="1"/>
+            <!-- 方位刻度线 -->
+            <Path Stroke="#202028" StrokeThickness="1.2" Data="M0,-34 L0,34 M-34,0 L34,0"/>
+
+            <!-- 摇杆帽：阴影底座 -->
+            <Ellipse x:Name="PART_Cap" Width="48" Height="48"
+                     HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Ellipse.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="7" ShadowDepth="4" Opacity="0.7" Direction="-90"/>
+                </Ellipse.Effect>
+                <Ellipse.Fill>
+                    <RadialGradientBrush GradientOrigin="0.45,0.32">
+                        <GradientStop Offset="0.0" Color="#44444F"/>
+                        <GradientStop Offset="0.55" Color="#2A2A34"/>
+                        <GradientStop Offset="1.0" Color="#101018"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <!-- 帽子外描边 -->
+            <Ellipse Width="48" Height="48" Stroke="#4A4A58" StrokeThickness="1"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     RenderTransform="{Binding ElementName=PART_Cap, Path=RenderTransform}"
+                     IsHitTestVisible="False"/>
+            <!-- 顶部橡胶凸起 -->
+            <Ellipse Width="30" Height="30" Margin="0,0,0,6"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     IsHitTestVisible="False">
+                <Ellipse.RenderTransform>
+                    <TranslateTransform x:Name="PART_CapHighlight"/>
+                </Ellipse.RenderTransform>
+                    <Ellipse.Fill>
+                        <RadialGradientBrush GradientOrigin="0.45,0.3">
+                            <GradientStop Offset="0.0" Color="#E65A5A68"/>
+                            <GradientStop Offset="0.7" Color="#992E2E38"/>
+                            <GradientStop Offset="1.0" Color="#331A1A22"/>
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+            </Ellipse>
+            <!-- 顶部高光点 -->
+            <Ellipse Width="12" Height="8" Margin="0,0,0,14"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Fill="#FFFFFF" Opacity="0.25" IsHitTestVisible="False"/>
+        </Grid>
+    </ControlTemplate>
+
+    <Style TargetType="{x:Type ctrl:AnalogStick}">
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Height" Value="100"/>
+        <Setter Property="Template" Value="{StaticResource AnalogStickTemplate}"/>
+    </Style>
+
+    <!-- ============================================================ -->
+    <!--  TriggerBar 模板：纵向填充条（保留现有行为）                       -->
+    <!-- ============================================================ -->
+    <ControlTemplate x:Key="TriggerBarTemplate" TargetType="{x:Type ctrl:TriggerBar}">
+        <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+            <Border CornerRadius="6" Background="#0E0E14" BorderBrush="#2A2A34" BorderThickness="1.5"/>
+            <Border x:Name="PART_Fill" CornerRadius="6" VerticalAlignment="Bottom"
+                    Background="#3D7AE0" Opacity="0.92" Height="0">
+                <Border.Effect>
+                    <DropShadowEffect Color="#3D7AE0" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
+                </Border.Effect>
+            </Border>
+        </Grid>
+    </ControlTemplate>
+
+    <Style TargetType="{x:Type ctrl:TriggerBar}">
+        <Setter Property="Width" Value="38"/>
+        <Setter Property="Height" Value="92"/>
+        <Setter Property="Template" Value="{StaticResource TriggerBarTemplate}"/>
+    </Style>
+
+    <!-- ============================================================ -->
+    <!--  PadButton 样式：凸面圆形按钮，按下内陷                          -->
+    <!-- ============================================================ -->
+    <Style x:Key="PadButton" TargetType="Button">
+        <Setter Property="Foreground" Value="#F0F0F5"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- 底部投影 -->
+                        <Ellipse x:Name="Shadow" Margin="2,3,2,1" Fill="#000000" Opacity="0.45">
+                            <Ellipse.Effect><BlurEffect Radius="4"/></Ellipse.Effect>
+                        </Ellipse>
+                        <!-- 按钮主体 -->
+                        <Border x:Name="Bd" CornerRadius="32"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="2"/>
+                        <!-- 顶部凸面高光（覆盖层，不参与命中测试）-->
+                        <Ellipse x:Name="Gloss" IsHitTestVisible="False" Fill="{StaticResource ButtonGloss}"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                                          IsHitTestVisible="False"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="RenderTransform" TargetName="Bd">
+                                <Setter.Value><TranslateTransform Y="2"/></Setter.Value>
+                            </Setter>
+                            <Setter Property="RenderTransform" TargetName="Gloss">
+                                <Setter.Value><TranslateTransform Y="2"/></Setter.Value>
+                            </Setter>
+                            <Setter Property="Background" TargetName="Bd" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=BorderBrush}"/>
+                            <Setter Property="Opacity" TargetName="Shadow" Value="0.2"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================ -->
+    <!--  官方面键配色                                                  -->
+    <!-- ============================================================ -->
+    <!-- DualShock 4 官方色：△ 绿、○ 粉、✕ 蓝、□ 粉 -->
+    <SolidColorBrush x:Key="PS_Triangle" Color="#6FB534"/>  <!-- △ 绿 -->
+    <SolidColorBrush x:Key="PS_Circle"   Color="#E04F8A"/>  <!-- ○ 粉 -->
+    <SolidColorBrush x:Key="PS_Cross"    Color="#3D7AE0"/>  <!-- ✕ 蓝 -->
+    <SolidColorBrush x:Key="PS_Square"   Color="#D671AD"/>  <!-- □ 粉 -->
+    <!-- Xbox 360 配色：A 绿、B 红、X 蓝、Y 黄 -->
+    <SolidColorBrush x:Key="Xbox_A" Color="#6FB534"/>
+    <SolidColorBrush x:Key="Xbox_B" Color="#E0413B"/>
+    <SolidColorBrush x:Key="Xbox_X" Color="#3D7AE0"/>
+    <SolidColorBrush x:Key="Xbox_Y" Color="#E0A52E"/>
+
+</ResourceDictionary>

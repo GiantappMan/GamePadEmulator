@@ -1,0 +1,203 @@
+<UserControl x:Class="GamePadEmulator.Views.Ds4View"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctrl="clr-namespace:GamePadEmulator.Controls"
+             Width="760" Height="480"
+             Background="Transparent"
+             PreviewMouseDown="Btn_PreviewDown" PreviewMouseUp="Btn_PreviewUp">
+
+    <!-- 写实拟物 DualShock 4。交互元素的 Tag 由代码后置消费；机身纯装饰矢量。 -->
+    <Viewbox Stretch="Uniform">
+        <Grid Width="760" Height="480">
+
+            <!-- ============ 机身（DS4 翼形轮廓）============ -->
+            <!-- 阴影底 -->
+            <Path Fill="#000000" Opacity="0.4" Margin="0,6,0,-4">
+                <Path.Effect><BlurEffect Radius="10"/></Path.Effect>
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure StartPoint="230,150" IsClosed="True">
+                            <LineSegment Point="530,150"/>
+                            <BezierSegment Point1="570,150" Point2="608,175" Point3="620,225"/>
+                            <BezierSegment Point1="635,295" Point2="590,355" Point3="540,348"/>
+                            <BezierSegment Point1="500,343" Point2="470,330" Point3="440,330"/>
+                            <LineSegment Point="320,330"/>
+                            <BezierSegment Point1="290,330" Point2="262,343" Point3="222,348"/>
+                            <BezierSegment Point1="172,355" Point2="128,295" Point3="142,225"/>
+                            <BezierSegment Point1="154,175" Point2="192,150" Point3="230,150"/>
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <!-- 主体填充渐变 -->
+            <Path Fill="{StaticResource BodyFill}" Stroke="#0A0A10" StrokeThickness="2">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure StartPoint="230,150" IsClosed="True">
+                            <LineSegment Point="530,150"/>
+                            <BezierSegment Point1="570,150" Point2="608,175" Point3="620,225"/>
+                            <BezierSegment Point1="635,295" Point2="590,355" Point3="540,348"/>
+                            <BezierSegment Point1="500,343" Point2="470,330" Point3="440,330"/>
+                            <LineSegment Point="320,330"/>
+                            <BezierSegment Point1="290,330" Point2="262,343" Point3="222,348"/>
+                            <BezierSegment Point1="172,355" Point2="128,295" Point3="142,225"/>
+                            <BezierSegment Point1="154,175" Point2="192,150" Point3="230,150"/>
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+            <!-- 表面高光层（同样轮廓，半透明白色径向渐变）-->
+            <Path Fill="{StaticResource BodyGloss}" IsHitTestVisible="False">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure StartPoint="230,150" IsClosed="True">
+                            <LineSegment Point="530,150"/>
+                            <BezierSegment Point1="570,150" Point2="608,175" Point3="620,225"/>
+                            <BezierSegment Point1="635,295" Point2="590,355" Point3="540,348"/>
+                            <BezierSegment Point1="500,343" Point2="470,330" Point3="440,330"/>
+                            <LineSegment Point="320,330"/>
+                            <BezierSegment Point1="290,330" Point2="262,343" Point3="222,348"/>
+                            <BezierSegment Point1="172,355" Point2="128,295" Point3="142,225"/>
+                            <BezierSegment Point1="154,175" Point2="192,150" Point3="230,150"/>
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+
+            <!-- ============ 灯条（顶部，发光）============ -->
+            <Rectangle Width="140" Height="5" RadiusX="2.5" RadiusY="2.5"
+                       HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,150,0,0"
+                       Fill="#2A6FD6" IsHitTestVisible="False">
+                <Rectangle.Effect><DropShadowEffect Color="#4A8FF6" BlurRadius="14" ShadowDepth="0" Opacity="0.85"/></Rectangle.Effect>
+            </Rectangle>
+
+            <!-- ============ 触控板（顶部中央，2:1）============ -->
+            <Border Tag="Touch" CornerRadius="6" Width="200" Height="78"
+                    Background="#0C0C12" BorderBrush="#2C2C36" BorderThickness="1.5"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,162,0,0" Cursor="Hand">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="2" Opacity="0.6"/></Border.Effect>
+                <Grid>
+                    <!-- 触控板表面细微高光 -->
+                    <Rectangle Margin="4,4,4,40" RadiusX="4" RadiusY="4">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0" Color="#0FFFFFFF"/>
+                                <GradientStop Offset="1" Color="#00FFFFFF"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <TextBlock Text="TOUCHPAD" Foreground="#3E3E4A" FontSize="11" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
+                </Grid>
+            </Border>
+
+            <!-- ============ 扳机 L2 / R2（顶部）============ -->
+            <ctrl:TriggerBar x:Name="LeftTrigger" Tag="LT"
+                             HorizontalAlignment="Left" VerticalAlignment="Top" Margin="248,2,0,0"
+                             ValueChanged="LeftTrigger_Changed"/>
+            <ctrl:TriggerBar x:Name="RightTrigger" Tag="RT"
+                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,248,0"
+                             ValueChanged="RightTrigger_Changed"/>
+
+            <!-- ============ 肩键 L1 / R1 ============ -->
+            <Border Tag="LB" CornerRadius="14" Width="84" Height="22" Background="{StaticResource ShoulderFill}"
+                    BorderBrush="#40404A" BorderThickness="1.5"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="238,36,0,0" Cursor="Hand">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="2" Opacity="0.5"/></Border.Effect>
+                <TextBlock Text="L1" Foreground="#CFCFD8" FontSize="12" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <Border Tag="RB" CornerRadius="14" Width="84" Height="22" Background="{StaticResource ShoulderFill}"
+                    BorderBrush="#40404A" BorderThickness="1.5"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,36,238,0" Cursor="Hand">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="2" Opacity="0.5"/></Border.Effect>
+                <TextBlock Text="R1" Foreground="#CFCFD8" FontSize="12" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- ============ Share / Options（触控板两侧）============ -->
+            <Border Tag="Back" CornerRadius="9" Width="34" Height="16" Background="#1E1E26" BorderBrush="#3A3A44" BorderThickness="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="-118,250,0,0" Cursor="Hand">
+                <TextBlock Text="▮▶" Foreground="#7A7A88" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <Border Tag="Start" CornerRadius="9" Width="34" Height="16" Background="#1E1E26" BorderBrush="#3A3A44" BorderThickness="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="118,250,0,0" Cursor="Hand">
+                <TextBlock Text="▶▮" Foreground="#7A7A88" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- ============ 十字键（左上）============ -->
+            <Grid Width="120" Height="120" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="178,248,0,0">
+                <!-- 十字底座（渐变质感）-->
+                <Path Stroke="#0E0E14" StrokeThickness="1.5">
+                    <Path.Fill>
+                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                            <GradientStop Offset="0" Color="#34343E"/>
+                            <GradientStop Offset="1" Color="#1C1C24"/>
+                        </LinearGradientBrush>
+                    </Path.Fill>
+                    <Path.Data>M40,8 L80,8 L80,40 L112,40 L112,80 L80,80 L80,112 L40,112 L40,80 L8,80 L8,40 L40,40 Z</Path.Data>
+                </Path>
+                <!-- 中心圆点 -->
+                <Ellipse Width="10" Height="10" Fill="#0C0C12" Stroke="#2C2C36" StrokeThickness="1" IsHitTestVisible="False"/>
+                <!-- 上 -->
+                <Border Tag="Up" Background="Transparent" Width="40" Height="36" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,8,0,0" Cursor="Hand">
+                    <Path Data="M0,24 L20,4 L40,24 Z" Fill="{StaticResource PS_Triangle}" Stretch="Uniform" Width="20" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.85"/>
+                </Border>
+                <!-- 下 -->
+                <Border Tag="Down" Background="Transparent" Width="40" Height="36" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8" Cursor="Hand">
+                    <Path Data="M0,4 L20,24 L40,4 Z" Fill="{StaticResource PS_Triangle}" Stretch="Uniform" Width="20" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.85"/>
+                </Border>
+                <!-- 左 -->
+                <Border Tag="Left" Background="Transparent" Width="36" Height="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Cursor="Hand">
+                    <Path Data="M24,0 L4,20 L24,40 Z" Fill="{StaticResource PS_Triangle}" Stretch="Uniform" Width="14" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.85"/>
+                </Border>
+                <!-- 右 -->
+                <Border Tag="Right" Background="Transparent" Width="36" Height="40" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Cursor="Hand">
+                    <Path Data="M4,0 L24,20 L4,40 Z" Fill="{StaticResource PS_Triangle}" Stretch="Uniform" Width="14" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.85"/>
+                </Border>
+            </Grid>
+
+            <!-- ============ 面键（右上：△ ○ ✕ □）—— 已修正到真正右上 ============ -->
+            <Grid Width="128" Height="128" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,244,168,0">
+                <!-- △ 三角（上）-->
+                <Button Tag="Y" Style="{StaticResource PadButton}" Background="#1E1E26" BorderBrush="{StaticResource PS_Triangle}"
+                        Width="44" Height="44" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0">
+                    <Path Data="M0,14 L9,0 L18,14 Z" Fill="{StaticResource PS_Triangle}" Stretch="Uniform" Width="15" Height="15"/>
+                </Button>
+                <!-- ○ 圆（右）-->
+                <Button Tag="B" Style="{StaticResource PadButton}" Background="#1E1E26" BorderBrush="{StaticResource PS_Circle}"
+                        Width="44" Height="44" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0">
+                    <Ellipse Width="18" Height="18" Stroke="{StaticResource PS_Circle}" StrokeThickness="3" Fill="Transparent"/>
+                </Button>
+                <!-- ✕ 叉（下）-->
+                <Button Tag="A" Style="{StaticResource PadButton}" Background="#1E1E26" BorderBrush="{StaticResource PS_Cross}"
+                        Width="44" Height="44" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,2">
+                    <Path Data="M0,0 L15,15 M15,0 L0,15" Stroke="{StaticResource PS_Cross}" StrokeThickness="3" Stretch="Uniform" Width="15" Height="15"/>
+                </Button>
+                <!-- □ 方（左）-->
+                <Button Tag="X" Style="{StaticResource PadButton}" Background="#1E1E26" BorderBrush="{StaticResource PS_Square}"
+                        Width="44" Height="44" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,0,0,0">
+                    <Rectangle Width="15" Height="15" Stroke="{StaticResource PS_Square}" StrokeThickness="3" Fill="Transparent"/>
+                </Button>
+            </Grid>
+
+            <!-- ============ 摇杆（底部对称）============ -->
+            <ctrl:AnalogStick x:Name="LeftStick" Tag="L3" TravelRadius="32"
+                              HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="250,0,0,40"
+                              PositionChanged="LeftStick_Changed"/>
+            <ctrl:AnalogStick x:Name="RightStick" Tag="R3" TravelRadius="32"
+                              HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,250,40"
+                              PositionChanged="RightStick_Changed"/>
+
+            <!-- ============ PS 按钮（底部中央，发光）============ -->
+            <Border Tag="Guide" CornerRadius="16" Width="32" Height="32"
+                    Background="#0C0C12" BorderBrush="#3A3A48" BorderThickness="1.5"
+                    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,32" Cursor="Hand">
+                <Border.Effect><DropShadowEffect Color="#2A6FD6" BlurRadius="12" ShadowDepth="0" Opacity="0.5"/></Border.Effect>
+                <TextBlock Text="PS" Foreground="#6A6A78" FontSize="11" FontWeight="Bold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+        </Grid>
+    </Viewbox>
+</UserControl>

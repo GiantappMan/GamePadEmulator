@@ -1,0 +1,28 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+project.lock.json
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Test / temporary artifacts
+*.png
+*.png.done
+*.png.err
+TestResults/
+
+# Driver installer (downloadable; don't bloat the repo)
+driver/
