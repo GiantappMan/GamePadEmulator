@@ -24,5 +24,13 @@ project.lock.json
 *.png.err
 TestResults/
 
+# 但 docs/ 下的说明用截图需要入库
+!docs/**/*.png
+
 # Driver installer (downloadable; don't bloat the repo)
 driver/
+
+# Packaging artifacts (build-installer.ps1 产物，体积大不入库)
+tools/packaging/publish/
+tools/packaging/output/
+tools/packaging/*.log
