@@ -63,10 +63,12 @@
             </Ellipse>
             <!-- 凹井内圈细描边 -->
             <Ellipse Margin="5" Stroke="#2C2C36" StrokeThickness="1"/>
-            <!-- 方位刻度线（必须 Center + Stretch=None，否则默认 Stretch 会把以原点为中心的相对坐标拉伸平移，导致十字偏离摇杆帽中心）-->
-            <Path x:Name="CrossHair" Stroke="#202028" StrokeThickness="1.2" Data="M0,-34 L0,34 M-34,0 L34,0"
-                  HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None"/>
-
+            <!-- 方位刻度线：在凹井之上、摇杆帽之下（摇杆帽盖住中心，十字线从帽边伸出，符合真实摇杆）。
+                 两条显式居中的细 Rectangle，与摇杆帽同 Center 机制，像素级居中对齐。-->
+            <Rectangle x:Name="CrossH" Width="68" Height="1.2" Fill="#4A4A58" Opacity="0.8"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+            <Rectangle x:Name="CrossV" Width="1.2" Height="68" Fill="#4A4A58" Opacity="0.8"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
             <!-- 摇杆帽：阴影底座 -->
             <Ellipse x:Name="PART_Cap" Width="48" Height="48"
                      HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -74,7 +76,7 @@
                     <DropShadowEffect Color="Black" BlurRadius="7" ShadowDepth="4" Opacity="0.7" Direction="-90"/>
                 </Ellipse.Effect>
                 <Ellipse.Fill>
-                    <RadialGradientBrush GradientOrigin="0.45,0.32">
+                    <RadialGradientBrush GradientOrigin="0.5,0.32">
                         <GradientStop Offset="0.0" Color="#44444F"/>
                         <GradientStop Offset="0.55" Color="#2A2A34"/>
                         <GradientStop Offset="1.0" Color="#101018"/>
@@ -86,25 +88,26 @@
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      RenderTransform="{Binding ElementName=PART_Cap, Path=RenderTransform}"
                      IsHitTestVisible="False"/>
-            <!-- 顶部橡胶凸起（垂直居中，保证摇杆帽视觉中心 = 几何中心，十字线对齐）-->
-            <Ellipse Width="30" Height="30" Margin="0"
+            <!-- 顶部橡胶凸起（偏上，模拟摇杆帽顶部的橡胶凸面立体感）-->
+            <Ellipse Width="30" Height="30" Margin="0,0,0,6"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      IsHitTestVisible="False">
                 <Ellipse.RenderTransform>
                     <TranslateTransform x:Name="PART_CapHighlight"/>
                 </Ellipse.RenderTransform>
                     <Ellipse.Fill>
-                        <RadialGradientBrush GradientOrigin="0.45,0.3">
+                        <RadialGradientBrush GradientOrigin="0.5,0.3">
                             <GradientStop Offset="0.0" Color="#E65A5A68"/>
                             <GradientStop Offset="0.7" Color="#992E2E38"/>
                             <GradientStop Offset="1.0" Color="#331A1A22"/>
                         </RadialGradientBrush>
                     </Ellipse.Fill>
             </Ellipse>
-            <!-- 顶部高光点（垂直居中）-->
-            <Ellipse Width="12" Height="8" Margin="0"
+            <!-- 顶部高光点（偏上，摇杆帽顶部的反光；绑定 PART_Cap 的 RenderTransform 跟随摇杆帽移动）-->
+            <Ellipse Width="12" Height="8" Margin="0,0,0,14"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
-                     Fill="#FFFFFF" Opacity="0.25" IsHitTestVisible="False"/>
+                     Fill="#FFFFFF" Opacity="0.25" IsHitTestVisible="False"
+                     RenderTransform="{Binding ElementName=PART_Cap, Path=RenderTransform}"/>
         </Grid>
     </ControlTemplate>
 
