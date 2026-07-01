@@ -63,8 +63,9 @@
             </Ellipse>
             <!-- 凹井内圈细描边 -->
             <Ellipse Margin="5" Stroke="#2C2C36" StrokeThickness="1"/>
-            <!-- 方位刻度线 -->
-            <Path Stroke="#202028" StrokeThickness="1.2" Data="M0,-34 L0,34 M-34,0 L34,0"/>
+            <!-- 方位刻度线（必须 Center + Stretch=None，否则默认 Stretch 会把以原点为中心的相对坐标拉伸平移，导致十字偏离摇杆帽中心）-->
+            <Path x:Name="CrossHair" Stroke="#202028" StrokeThickness="1.2" Data="M0,-34 L0,34 M-34,0 L34,0"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None"/>
 
             <!-- 摇杆帽：阴影底座 -->
             <Ellipse x:Name="PART_Cap" Width="48" Height="48"
@@ -85,8 +86,8 @@
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      RenderTransform="{Binding ElementName=PART_Cap, Path=RenderTransform}"
                      IsHitTestVisible="False"/>
-            <!-- 顶部橡胶凸起 -->
-            <Ellipse Width="30" Height="30" Margin="0,0,0,6"
+            <!-- 顶部橡胶凸起（垂直居中，保证摇杆帽视觉中心 = 几何中心，十字线对齐）-->
+            <Ellipse Width="30" Height="30" Margin="0"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      IsHitTestVisible="False">
                 <Ellipse.RenderTransform>
@@ -100,8 +101,8 @@
                         </RadialGradientBrush>
                     </Ellipse.Fill>
             </Ellipse>
-            <!-- 顶部高光点 -->
-            <Ellipse Width="12" Height="8" Margin="0,0,0,14"
+            <!-- 顶部高光点（垂直居中）-->
+            <Ellipse Width="12" Height="8" Margin="0"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      Fill="#FFFFFF" Opacity="0.25" IsHitTestVisible="False"/>
         </Grid>
@@ -114,23 +115,40 @@
     </Style>
 
     <!-- ============================================================ -->
-    <!--  TriggerBar 模板：纵向填充条（保留现有行为）                       -->
+    <!--  TriggerBar 模板：真实扣机舌（横向、宽圆角，贴机身顶部）            -->
     <!-- ============================================================ -->
     <ControlTemplate x:Key="TriggerBarTemplate" TargetType="{x:Type ctrl:TriggerBar}">
         <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
-            <Border CornerRadius="6" Background="#0E0E14" BorderBrush="#2A2A34" BorderThickness="1.5"/>
-            <Border x:Name="PART_Fill" CornerRadius="6" VerticalAlignment="Bottom"
+            <!-- 投影底（扣机下方的阴影，营造悬浮感）-->
+            <Border CornerRadius="13" Background="#000000" Opacity="0.35" Margin="0,2,0,-2">
+                <Border.Effect><BlurEffect Radius="4"/></Border.Effect>
+            </Border>
+            <!-- 扣机主体：宽圆角舌，两端更圆，深色塑料质感 -->
+            <Border CornerRadius="13" BorderBrush="#0A0A10" BorderThickness="1.5">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                        <GradientStop Offset="0.0" Color="#2E2E38"/>
+                        <GradientStop Offset="0.5" Color="#202028"/>
+                        <GradientStop Offset="1.0" Color="#14141C"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+            <!-- 蓄力填充：蓝色亮带从底部爬升，表达扣下的深度（逻辑不变，只换皮）-->
+            <Border x:Name="PART_Fill" CornerRadius="13" VerticalAlignment="Bottom"
                     Background="#3D7AE0" Opacity="0.92" Height="0">
                 <Border.Effect>
                     <DropShadowEffect Color="#3D7AE0" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
                 </Border.Effect>
             </Border>
+            <!-- 顶部高光线（立体塑料感）-->
+            <Border Height="2" VerticalAlignment="Top" Margin="10,3,10,0"
+                    CornerRadius="1.5" Background="#FFFFFF" Opacity="0.18" IsHitTestVisible="False"/>
         </Grid>
     </ControlTemplate>
 
     <Style TargetType="{x:Type ctrl:TriggerBar}">
-        <Setter Property="Width" Value="38"/>
-        <Setter Property="Height" Value="92"/>
+        <Setter Property="Width" Value="84"/>
+        <Setter Property="Height" Value="26"/>
         <Setter Property="Template" Value="{StaticResource TriggerBarTemplate}"/>
     </Style>
 

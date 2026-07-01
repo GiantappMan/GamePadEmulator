@@ -62,147 +62,163 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- 悬浮按钮：半透明深色背景 + 轻投影，浮于手柄之上不遮挡 -->
+        <Style x:Key="FloatButton" TargetType="Button">
+            <Setter Property="Background" Value="#CC1A1A24"/>
+            <Setter Property="Foreground" Value="#E0E0E8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="7" Background="{TemplateBinding Background}"
+                                BorderBrush="#33333F" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#E62E2E3A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- 悬浮主操作按钮（连接/游戏模式用，更醒目）-->
+        <Style x:Key="FloatPrimary" TargetType="Button" BasedOn="{StaticResource FloatButton}">
+            <Setter Property="Background" Value="#CC2E6FD6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E63D7AE6"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- 悬浮危险按钮（断开连接用）-->
+        <Style x:Key="FloatDanger" TargetType="Button" BasedOn="{StaticResource FloatButton}">
+            <Setter Property="Background" Value="#CCC0392B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E6D6453A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- 悬浮模式 tab（更紧凑）-->
+        <Style x:Key="FloatTab" TargetType="ToggleButton" BasedOn="{StaticResource ModeTab}">
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
     </Window.Resources>
 
+    <!-- 手柄独占整个窗口内容区，最大化手柄显示空间；控制按钮浮于其上。 -->
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>  <!-- toolbar -->
-            <RowDefinition Height="*"/>      <!-- stage -->
-            <RowDefinition Height="Auto"/>   <!-- help -->
-        </Grid.RowDefinitions>
-
-        <!-- ============ Top toolbar ============ -->
-        <Border Grid.Row="0" Background="#14141C" Padding="20,14">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Title -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="🎮" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBlock Text="手柄模拟器" FontSize="18" FontWeight="Bold" Foreground="#E8E8EE" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="ModeLabel" Text="Xbox 360 (XInput)" FontSize="12" Foreground="#7A7A8A"
-                               VerticalAlignment="Center" Margin="12,2,0,0"/>
-                </StackPanel>
-
-                <!-- Mode toggle -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ToggleButton x:Name="XboxTab" Style="{StaticResource ModeTab}" Content="Xbox 手柄" Click="SelectXbox" Margin="0,0,6,0"/>
-                    <ToggleButton x:Name="PsTab" Style="{StaticResource ModeTab}" Content="PS 手柄" Click="SelectPs"/>
-                </StackPanel>
-
-                <!-- Connect + Game Mode -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="GameModeBtn" Style="{StaticResource PrimaryButton}"
-                            Content="游戏模式" Click="ToggleGameMode" Margin="0,0,8,0"
-                            ToolTip="置顶浮窗且点击不抢焦点，游戏保持前台"/>
-                    <Button x:Name="ConnectBtn" Style="{StaticResource PrimaryButton}"
-                            Content="连接虚拟手柄" Click="ConnectClick"/>
-                </StackPanel>
-            </Grid>
+        <!-- ============ Centre stage（手柄画布独占整窗）============ -->
+        <Border Background="#101019" Margin="8">
+            <!-- ViewHost 用 Stretch 填满，让内部 Viewbox 等比缩放手柄，保证任意窗口尺寸都完整可见。 -->
+            <ContentControl x:Name="ViewHost"/>
         </Border>
 
-        <!-- ============ Centre stage ============ -->
-        <!-- 手柄画布占满整行；侧栏浮于其上（Grid.ColumnSpan 跨列），展开时不挤压手柄布局。 -->
-        <Grid Grid.Row="1">
-            <!-- Controller canvas（独占整行）-->
-            <Border Background="#101019" Margin="16">
-                <ContentControl x:Name="ViewHost" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
+        <!-- ============ 悬浮控制按钮组（右下角，半透明，不抢手柄空间）============ -->
+        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,18,18">
+            <!-- 模式切换 -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+                <ToggleButton x:Name="XboxTab" Style="{StaticResource FloatTab}" Content="Xbox" Click="SelectXbox" Margin="0,0,6,0"/>
+                <ToggleButton x:Name="PsTab" Style="{StaticResource FloatTab}" Content="PS" Click="SelectPs"/>
+            </StackPanel>
+            <!-- 游戏模式 + 连接 -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+                <Button x:Name="GameModeBtn" Style="{StaticResource FloatPrimary}"
+                        Content="游戏模式" Click="ToggleGameMode" Margin="0,0,6,0"
+                        ToolTip="置顶浮窗且点击不抢焦点，游戏保持前台"/>
+                <Button x:Name="ConnectBtn" Style="{StaticResource FloatPrimary}"
+                        Content="连接虚拟手柄" Click="ConnectClick"/>
+            </StackPanel>
+            <!-- 状态与说明 -->
+            <Button x:Name="StatusBtn" Style="{StaticResource FloatButton}"
+                    Content="ℹ 状态" Click="ToggleSidePanel" HorizontalAlignment="Right"
+                    ToolTip="查看驱动状态与使用说明"/>
+        </StackPanel>
 
-            <!-- 折叠态：浮在右侧的窄标签条（点击展开）-->
-            <Border x:Name="CollapsedTab" Background="#1A1A24" CornerRadius="6"
-                    Cursor="Hand" MouseLeftButtonDown="ToggleSidePanel"
-                    Visibility="Visible" Width="40" Height="120"
-                    HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,24,0"
-                    ToolTip="展开状态与说明">
-                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/></Border.Effect>
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="信" Foreground="#9A9AA8" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                    <TextBlock Text="息" Foreground="#9A9AA8" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                    <TextBlock Text="&#x25C0;" Foreground="#5A9AE6" FontSize="10" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <!-- 展开态：浮动叠在手柄之上的面板（半透明遮罩 + 卡片）-->
-            <Grid x:Name="SidePanel" Visibility="Collapsed">
-                <!-- 半透明遮罩：点击空白处收起 -->
-                <Rectangle Fill="#8C000000" MouseLeftButtonDown="ToggleSidePanel"/>
-                <!-- 信息卡片（居中浮层）-->
-                <Border Background="#13131C" CornerRadius="10" BorderBrush="#2A2A34" BorderThickness="1.5"
-                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40"
-                        MaxWidth="340" MaxHeight="500">
-                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="24" ShadowDepth="0" Opacity="0.8"/></Border.Effect>
-                    <StackPanel x:Name="SideContent" Margin="18,16">
-                        <!-- 标题 + 关闭按钮 -->
-                        <Grid Margin="0,0,0,12">
-                            <TextBlock Text="状态与说明" Foreground="#7A7A8A" FontSize="12" FontWeight="SemiBold"
-                                       VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <Border Background="#1A1A24" CornerRadius="5" Padding="8,2" Cursor="Hand"
-                                    HorizontalAlignment="Right" MouseLeftButtonDown="ToggleSidePanel"
-                                    ToolTip="收起">
-                                <TextBlock Text="&#x2715;" Foreground="#9A9AA8" FontSize="10"/>
-                            </Border>
-                        </Grid>
-
-                        <!-- Driver -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Ellipse x:Name="DriverDot" Width="10" Height="10" Fill="OrangeRed" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="DriverText" Foreground="#CFCFD8" FontSize="12" VerticalAlignment="Center" Text="ViGEmBus 驱动：检测中…"/>
-                        </StackPanel>
-                        <!-- Connection -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                            <Ellipse x:Name="ConnDot" Width="10" Height="10" Fill="DimGray" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="ConnText" Foreground="#CFCFD8" FontSize="12" VerticalAlignment="Center" Text="虚拟手柄：未连接"/>
-                        </StackPanel>
-
-                        <TextBlock x:Name="Hint" TextWrapping="Wrap" Foreground="#E0A52E" FontSize="11" Margin="0,0,0,12"/>
-
-                        <Border Background="#1A1A24" CornerRadius="6" Padding="12" Margin="0,0,0,12">
-                            <StackPanel>
-                                <TextBlock Text="使用方法" Foreground="#9A9AA8" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#B0B0BC" LineHeight="18">
-                                    1. 选择要模拟的手柄（Xbox / PS）<LineBreak/>
-                                    2. 点击「连接虚拟手柄」<LineBreak/>
-                                    3. 在画面上点击按键、拖拽摇杆<LineBreak/>
-                                    4. 打开游戏即可生效控制<LineBreak/><LineBreak/>
-                                    摇杆：按住中心圆帽拖动，松开回中<LineBreak/>
-                                    扳机(LT/RT)：按住填充条蓄力，松开归零<LineBreak/>
-                                    十字键/功能键：按住即触发
-                                </TextBlock>
-                            </StackPanel>
+        <!-- ============ 状态与说明浮层（半透明遮罩 + 卡片）============ -->
+        <Grid x:Name="SidePanel" Visibility="Collapsed">
+            <!-- 半透明遮罩：点击空白处收起 -->
+            <Rectangle Fill="#8C000000" MouseLeftButtonDown="ToggleSidePanel"/>
+            <!-- 信息卡片（居中浮层）-->
+            <Border Background="#13131C" CornerRadius="10" BorderBrush="#2A2A34" BorderThickness="1.5"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40"
+                    MaxWidth="340" MaxHeight="560">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="24" ShadowDepth="0" Opacity="0.8"/></Border.Effect>
+                <StackPanel x:Name="SideContent" Margin="18,16">
+                    <!-- 标题 + 关闭按钮 -->
+                    <Grid Margin="0,0,0,12">
+                        <TextBlock Text="状态与说明" Foreground="#7A7A8A" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        <Border Background="#1A1A24" CornerRadius="5" Padding="8,2" Cursor="Hand"
+                                HorizontalAlignment="Right" MouseLeftButtonDown="ToggleSidePanel"
+                                ToolTip="收起">
+                            <TextBlock Text="&#x2715;" Foreground="#9A9AA8" FontSize="10"/>
                         </Border>
+                    </Grid>
 
-                        <Border Background="#1A1A24" CornerRadius="6" Padding="12">
-                            <StackPanel>
-                                <TextBlock Text="需要驱动" Foreground="#9A9AA8" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#B0B0BC" LineHeight="17">
-                                    真实向系统注入手柄需要 ViGEmBus 内核驱动（开源）。
-                                </TextBlock>
-                                <Button Content="打开 ViGEmBus 下载页 →" Background="Transparent" Foreground="#5A9AE6"
-                                        FontWeight="SemiBold" FontSize="11" Cursor="Hand" Margin="0,8,0,0"
-                                        Click="OpenDriverLink" HorizontalAlignment="Left">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <ContentPresenter TextBlock.Foreground="#5A9AE6"/>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </StackPanel>
-                        </Border>
+                    <!-- 当前模式 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="当前模式：" Foreground="#7A7A8A" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="ModeLabel" Text="Xbox 360 (XInput)" FontSize="12" Foreground="#5A9AE6" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Border>
-            </Grid>
-        </Grid>
+                    <!-- Driver -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Ellipse x:Name="DriverDot" Width="10" Height="10" Fill="OrangeRed" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock x:Name="DriverText" Foreground="#CFCFD8" FontSize="12" VerticalAlignment="Center" Text="ViGEmBus 驱动：检测中…"/>
+                    </StackPanel>
+                    <!-- Connection -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                        <Ellipse x:Name="ConnDot" Width="10" Height="10" Fill="DimGray" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock x:Name="ConnText" Foreground="#CFCFD8" FontSize="12" VerticalAlignment="Center" Text="虚拟手柄：未连接"/>
+                    </StackPanel>
 
-        <!-- ============ Bottom help ============ -->
-        <Border Grid.Row="2" Background="#0B0B12" Padding="20,10">
-            <TextBlock Foreground="#5A5A6A" FontSize="11" HorizontalAlignment="Center">
-                GamePad Emulator · 通过 ViGEmBus 虚拟出真实可被游戏识别的 Xbox 360 / DualShock 4 控制器
-            </TextBlock>
-        </Border>
+                    <TextBlock x:Name="Hint" TextWrapping="Wrap" Foreground="#E0A52E" FontSize="11" Margin="0,0,0,12"/>
+
+                    <Border Background="#1A1A24" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="使用方法" Foreground="#9A9AA8" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#B0B0BC" LineHeight="18">
+                                1. 选择要模拟的手柄（Xbox / PS）<LineBreak/>
+                                2. 点击「连接虚拟手柄」<LineBreak/>
+                                3. 在画面上点击按键、拖拽摇杆<LineBreak/>
+                                4. 打开游戏即可生效控制<LineBreak/><LineBreak/>
+                                摇杆：按住中心圆帽拖动，松开回中<LineBreak/>
+                                扳机(LT/RT)：按住填充条蓄力，松开归零<LineBreak/>
+                                十字键/功能键：按住即触发
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#1A1A24" CornerRadius="6" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="需要驱动" Foreground="#9A9AA8" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#B0B0BC" LineHeight="17">
+                                真实向系统注入手柄需要 ViGEmBus 内核驱动（开源）。
+                            </TextBlock>
+                            <Button Content="打开 ViGEmBus 下载页 →" Background="Transparent" Foreground="#5A9AE6"
+                                    FontWeight="SemiBold" FontSize="11" Cursor="Hand" Margin="0,8,0,0"
+                                    Click="OpenDriverLink" HorizontalAlignment="Left">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <ContentPresenter TextBlock.Foreground="#5A9AE6"/>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

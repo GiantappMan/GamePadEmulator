@@ -32,10 +32,12 @@ public static class WindowCapture
     {
         element.ApplyTemplate();
         element.UpdateLayout();
-        // Force a full measure/arrange so remote/hidden scenarios still render.
-        element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        var size = new Size(element.ActualWidth > 0 ? element.ActualWidth : element.Width,
-                            element.ActualHeight > 0 ? element.ActualHeight : element.Height);
+        // 注意：绝不能用 Measure(infinity) 强制重测——那会让 Viewbox/UserControl 等依赖
+        // 有限父容器约束的缩放逻辑失效（手柄会被按原始固定尺寸渲染而溢出）。
+        // 直接读取已由真实窗口布局计算好的 ActualWidth/Height，并据此 Arrange 一次确保渲染。
+        var size = new Size(
+            element.ActualWidth > 0 ? element.ActualWidth : element.Width,
+            element.ActualHeight > 0 ? element.ActualHeight : element.Height);
         if (size.Width <= 0 || size.Height <= 0) size = new Size(1040, 720);
         element.Arrange(new Rect(new Point(), size));
 

@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using GamePadEmulator.Core;
 
 namespace GamePadEmulator.Views;
@@ -34,6 +35,19 @@ public partial class MainWindow : Window
 
         RefreshStatus();
 
+        // 显式居中到屏幕工作区中心。XAML 的 CenterScreen 在 PerMonitorV2 多屏 DPI 下
+        // 不可靠（可能基于主屏而非实际），这里在内容渲染后用实际尺寸精确居中。
+        // （仅普通启动；GAMEPAD_GAMEMODE=1 验证场景会进浮窗，不在此居中。）
+        if (!string.Equals(Environment.GetEnvironmentVariable("GAMEPAD_GAMEMODE"), "1", StringComparison.OrdinalIgnoreCase))
+        {
+            ContentRendered += (_, _) =>
+            {
+                var work = SystemParameters.WorkArea;
+                Left = work.Left + (work.Width - ActualWidth) / 2;
+                Top = work.Top + (work.Height - ActualHeight) / 2;
+            };
+        }
+
         // Optional auto game-mode for verification harness.
         if (string.Equals(Environment.GetEnvironmentVariable("GAMEPAD_GAMEMODE"), "1", StringComparison.OrdinalIgnoreCase))
         {
@@ -55,7 +69,7 @@ public partial class MainWindow : Window
                 {
                     _connected = true;
                     ConnectBtn.Content = "断开连接";
-                    ConnectBtn.Style = (Style)FindResource("DangerButton");
+                    ConnectBtn.Style = (Style)FindResource("FloatDanger");
                     if (ViewHost.Content is IGamepadView gv) gv.Reset();
                     RefreshStatus();
                 }
@@ -98,7 +112,7 @@ public partial class MainWindow : Window
         {
             _connected = true;
             ConnectBtn.Content = "断开连接";
-            ConnectBtn.Style = (Style)FindResource("DangerButton");
+            ConnectBtn.Style = (Style)FindResource("FloatDanger");
             if (ViewHost.Content is IGamepadView gv) gv.Reset();
         }
         else
@@ -114,7 +128,7 @@ public partial class MainWindow : Window
         App.Controllers.Disconnect();
         _connected = false;
         ConnectBtn.Content = "连接虚拟手柄";
-        ConnectBtn.Style = (Style)FindResource("PrimaryButton");
+        ConnectBtn.Style = (Style)FindResource("FloatPrimary");
         RefreshStatus();
     }
 
@@ -137,7 +151,7 @@ public partial class MainWindow : Window
         if (!installed && !_connected)
         {
             Hint.Visibility = Visibility.Visible;
-            Hint.Text = "⚠ 未检测到 ViGEmBus 驱动。要真实操作游戏，请先安装 ViGEmBus 驱动（见底部说明）。UI 仍可正常交互预览。";
+            Hint.Text = "⚠ 未检测到 ViGEmBus 驱动。要真实操作游戏，请先安装 ViGEmBus 驱动（点「状态」查看下载链接）。UI 仍可正常交互预览。";
         }
         else if (_connected)
         {
@@ -164,28 +178,27 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// 侧边栏展开/折叠（浮动层，不挤压手柄）。点击折叠标签条、展开态的 ✕、或半透明遮罩空白处都触发。
-    /// 折叠态：右侧浮一条窄标签条；展开态：半透明遮罩 + 居中信息卡片浮于手柄之上。
+    /// 侧边栏展开/折叠（浮动层，不挤压手柄）。触发源多样：悬浮「状态」按钮的 Click、
+    /// 展开态的 ✕、或半透明遮罩空白处。统一用 RoutedEventArgs 基类签名兼容 Click 与 Mouse 事件。
+    /// 展开态：半透明遮罩 + 居中信息卡片浮于手柄之上；折叠态：仅显示悬浮按钮组。
     /// </summary>
-    private void ToggleSidePanel(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void ToggleSidePanel(object sender, RoutedEventArgs e)
     {
         if (_sideExpanded) ApplyCollapsedSidePanel();
         else ApplyExpandedSidePanel();
     }
 
-    /// <summary>折叠侧栏：隐藏浮动面板，显示右侧窄标签条（仍可点开）。手柄画面不受任何挤压。</summary>
+    /// <summary>折叠侧栏：隐藏浮动信息面板，悬浮按钮组依然可见。手柄画面不受任何挤压。</summary>
     private void ApplyCollapsedSidePanel()
     {
         _sideExpanded = false;
         SidePanel.Visibility = Visibility.Collapsed;
-        CollapsedTab.Visibility = Visibility.Visible;
     }
 
-    /// <summary>展开侧栏：浮动信息卡片叠在手柄之上（带遮罩），隐藏折叠标签条。</summary>
+    /// <summary>展开侧栏：浮动信息卡片叠在手柄之上（带遮罩）。</summary>
     private void ApplyExpandedSidePanel()
     {
         _sideExpanded = true;
-        CollapsedTab.Visibility = Visibility.Collapsed;
         SidePanel.Visibility = Visibility.Visible;
     }
 
@@ -225,7 +238,7 @@ public partial class MainWindow : Window
                 new IntPtr(ex | (int)NativeMethods.WS_EX_NOACTIVATE));
 
             GameModeBtn.Content = "退出游戏模式";
-            GameModeBtn.Style = (Style)FindResource("DangerButton");
+            GameModeBtn.Style = (Style)FindResource("FloatDanger");
         }
         else
         {
@@ -241,7 +254,7 @@ public partial class MainWindow : Window
             Left = _normalLeft; Top = _normalTop;
 
             GameModeBtn.Content = "游戏模式";
-            GameModeBtn.Style = (Style)FindResource("PrimaryButton");
+            GameModeBtn.Style = (Style)FindResource("FloatPrimary");
         }
     }
 
