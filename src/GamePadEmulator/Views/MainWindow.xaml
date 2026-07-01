@@ -2,8 +2,18 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="GamePad Emulator — 手柄模拟器（PS / Xbox）" Height="720" Width="1040"
-        Background="#0E0E14" WindowStartupLocation="CenterScreen"
+        Background="#FF0E0E14" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True"
         ResizeMode="CanResize" MinWidth="380" MinHeight="300">
+    <!-- 无边框透明窗口：AllowsTransparency 只能创建时设定，所以窗口始终透明 capable，
+         靠运行时改 Background 的 alpha 切换「普通不透明 ↔ 游戏模式半透明」。
+         WindowChrome 补回缩放边框（ResizeBorderThickness=6）；CaptionHeight=0 不留标题区。 -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0"
+                      ResizeBorderThickness="6"
+                      GlassFrameThickness="0"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
     <Window.Resources>
         <!-- Primary / danger button styles -->
         <Style x:Key="PrimaryButton" TargetType="Button">
@@ -120,7 +130,9 @@
     <!-- 手柄独占整个窗口内容区，最大化手柄显示空间；控制按钮浮于其上。 -->
     <Grid>
         <!-- ============ Centre stage（手柄画布独占整窗）============ -->
-        <Border Background="#101019" Margin="8">
+        <!-- 无边框窗口下，按住背景区可拖动窗口（DragMove）。手柄交互元素会吃掉自己的事件，不误触。
+             背景在代码里随游戏模式切换透明度（Window 背景 + 此 Border 背景同步切）。 -->
+        <Border x:Name="StageBorder" Background="#FF101019" Margin="8" MouseLeftButtonDown="WindowDrag">
             <!-- ViewHost 用 Stretch 填满，让内部 Viewbox 等比缩放手柄，保证任意窗口尺寸都完整可见。 -->
             <ContentControl x:Name="ViewHost"/>
         </Border>
@@ -145,6 +157,12 @@
                     Content="ℹ 状态" Click="ToggleSidePanel" HorizontalAlignment="Right"
                     ToolTip="查看驱动状态与使用说明"/>
         </StackPanel>
+
+        <!-- ============ 关闭按钮（左上角，无边框窗口的关闭入口）============ -->
+        <Button Style="{StaticResource FloatButton}" Content="✕"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18,18,0,0"
+                Width="34" Height="34" Padding="0" FontSize="14"
+                Click="CloseClick" ToolTip="关闭"/>
 
         <!-- ============ 状态与说明浮层（半透明遮罩 + 卡片）============ -->
         <Grid x:Name="SidePanel" Visibility="Collapsed">

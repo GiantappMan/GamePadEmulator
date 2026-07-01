@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using GamePadEmulator.Core;
@@ -17,10 +18,6 @@ public partial class MainWindow : Window
     private bool _connected;
     private bool _gameMode;
     private bool _sideExpanded;   // 侧边栏默认折叠
-
-    // 保存进入「游戏模式」前的窗口尺寸/位置，退出时还原。
-    private double _normalWidth, _normalHeight;
-    private double _normalLeft, _normalTop;
 
     public MainWindow()
     {
@@ -214,23 +211,16 @@ public partial class MainWindow : Window
 
         if (_gameMode)
         {
-            // 记录当前尺寸以便退出时还原。
-            _normalWidth = Width;
-            _normalHeight = Height;
-            _normalLeft = Left;
-            _normalTop = Top;
-
-            // 缩小成浮窗，靠右下角，不遮挡游戏主画面。
-            Width = 460;
-            Height = 360;
-            // 浮窗里侧栏折叠成窄标签（仍可点开查看状态），而不是完全消失。
+            // 不改窗口尺寸/位置：保留用户当前大小，用户可自行拖拽/缩放到合适位置。
             ApplyCollapsedSidePanel();
-            var screen = SystemParameters.WorkArea;
-            Left = screen.Right - Width - 24;
-            Top = screen.Bottom - Height - 24;
 
             // 置顶浮于所有窗口之上。
             Topmost = true;
+
+            // 游戏模式：背景转半透明（约 35% 不透明），能透出后面游戏画面，
+            // 手柄/按钮元素自身不透明故仍清晰。Window 背景和 StageBorder 背景需同步切。
+            Background = new SolidColorBrush(Color.FromArgb(0x59, 0x0E, 0x0E, 0x14));
+            StageBorder.Background = new SolidColorBrush(Color.FromArgb(0x59, 0x10, 0x10, 0x19));
 
             // WS_EX_NOACTIVATE：点击本窗口时不夺走前台焦点（游戏保持活动窗口）。
             int ex = (int)(long)NativeMethods.GetWindowLongPtr(hwnd, NativeMethods.GWL_EXSTYLE);
@@ -245,18 +235,28 @@ public partial class MainWindow : Window
             Topmost = false;
             // 退出时把侧栏还原成进入游戏模式前的折叠态。
             ApplyCollapsedSidePanel();
+            // 背景恢复完全不透明（Window + StageBorder 同步）。
+            Background = new SolidColorBrush(Color.FromArgb(0xFF, 0x0E, 0x0E, 0x14));
+            StageBorder.Background = new SolidColorBrush(Color.FromArgb(0xFF, 0x10, 0x10, 0x19));
             // 移除 NOACTIVATE，恢复正常窗口行为。
             int ex = (int)(long)NativeMethods.GetWindowLongPtr(hwnd, NativeMethods.GWL_EXSTYLE);
             NativeMethods.SetWindowLongPtr(hwnd, NativeMethods.GWL_EXSTYLE,
                 new IntPtr(ex & ~(int)NativeMethods.WS_EX_NOACTIVATE));
 
-            Width = _normalWidth; Height = _normalHeight;
-            Left = _normalLeft; Top = _normalTop;
-
             GameModeBtn.Content = "游戏模式";
             GameModeBtn.Style = (Style)FindResource("FloatPrimary");
         }
     }
+
+    /// <summary>拖动无边框窗口：按住背景区拖动（手柄交互元素自己消费事件，不会误触）。"</summary>
+    private void WindowDrag(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left)
+            try { DragMove(); } catch { /* 拖动被中断时忽略 */ }
+    }
+
+    /// <summary>关闭按钮（无边框窗口无系统关闭按钮，需自备入口）。"</summary>
+    private void CloseClick(object sender, RoutedEventArgs e) => Close();
 
     protected override void OnClosed(EventArgs e)
     {
